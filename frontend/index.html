@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Career Copilot</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <div class="app">
+    <!-- Header -->
+    <div class="header">
+      <h1>🚀 AI Career Copilot</h1>
+      <p>Upload your resume and get AI-powered career guidance</p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card">
+
+      <!-- Inputs -->
+      <div class="input-group">
+        <label>Upload Resume (PDF)</label>
+        <input type="file" id="resumeFile" accept=".pdf" />
+      </div>
+
+      <div class="input-group">
+        <label>Target Job Title</label>
+        <input type="text" id="jobTitle" placeholder="e.g. Data Analyst, Software Engineer" />
+      </div>
+
+      <div class="input-group">
+        <label>Job Description</label>
+        <textarea id="jobDescription" rows="6" placeholder="Paste the job description here..."></textarea>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="setTab('analyze', this)">📄 Resume Analysis</button>
+        <button class="tab" onclick="setTab('roadmap', this)">📚 Skill Roadmap</button>
+        <button class="tab" onclick="setTab('interview', this)">🎤 Mock Interview</button>
+      </div>
+
+      <!-- Submit Button -->
+      <button class="submit-btn" onclick="handleSubmit()">Generate ✨</button>
+
+      <!-- Loading -->
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>AI is analyzing your resume...</p>
+      </div>
+
+      <!-- Result -->
+      <div class="result" id="result"></div>
+
+    </div>
+  </div>
+
+  <script>
+    let activeTab = "analyze";
+
+    function setTab(tab, el) {
+      activeTab = tab;
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      el.classList.add("active");
+      document.getElementById("result").innerHTML = "";
+    }
+
+    async function handleSubmit() {
+      const file = document.getElementById("resumeFile").files[0];
+      const jobTitle = document.getElementById("jobTitle").value.trim();
+      const jobDescription = document.getElementById("jobDescription").value.trim();
+
+      if (!file || !jobTitle || !jobDescription) {
+        alert("Please fill all fields and upload your resume.");
+        return;
+      }
+
+      // Show loading
+      document.getElementById("loading").style.display = "flex";
+      document.getElementById("result").innerHTML = "";
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("job_title", jobTitle);
+      formData.append("job_description", jobDescription);
+
+      try {
+        let url = "";
+        if (activeTab === "analyze") url = "http://127.0.0.1:8000/analyze";
+        else if (activeTab === "roadmap") url = "http://127.0.0.1:8000/roadmap";
+        else if (activeTab === "interview") url = "http://127.0.0.1:8000/interview";
+
+        const response = await fetch(url, {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+        const text = data.analysis || data.roadmap || data.interview;
+
+        // Format and display result
+        document.getElementById("result").innerHTML = formatResult(text);
+
+      } catch (error) {
+        document.getElementById("result").innerHTML = `
+          <p style="color:#ff6b6b;">Something went wrong. Make sure the backend is running.</p>
+        `;
+      }
+
+      // Hide loading
+      document.getElementById("loading").style.display = "none";
+    }
+
+    function formatResult(text) {
+      // Convert plain text to formatted HTML
+      return text
+        .replace(/^(OVERALL SCORE:|STRENGTHS:|MISSING SKILLS:|IMPROVEMENTS:|VERDICT:|ROADMAP FOR:|MOCK INTERVIEW FOR:|FINAL TIP:)/gm, '<h3>$1</h3>')
+        .replace(/^(WEEK \d+:)/gm, '<h4>$1</h4>')
+        .replace(/^(Q\d+:.*)/gm, '<h4>$1</h4>')
+        .replace(/^(WHAT THEY'RE TESTING:|IDEAL ANSWER HINT:)/gm, '<strong>$1</strong>')
+        .replace(/^- (.+)/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+        .replace(/\n/g, '<br/>');
+    }
+  </script>
+
+</body>
+</html>

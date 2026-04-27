@@ -87,9 +87,10 @@
 
       try {
         let url = "";
-        if (activeTab === "analyze") url = "http://127.0.0.1:8000/analyze";
-        else if (activeTab === "roadmap") url = "http://127.0.0.1:8000/roadmap";
-        else if (activeTab === "interview") url = "http://127.0.0.1:8000/interview";
+        const BASE_URL = window.location.origin;
+        if (activeTab === "analyze") url = `${BASE_URL}/analyze`;
+        else if (activeTab === "roadmap") url = `${BASE_URL}/roadmap`;
+        else if (activeTab === "interview") url = `${BASE_URL}/interview`;
 
         const response = await fetch(url, {
           method: "POST",

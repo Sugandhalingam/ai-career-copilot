@@ -8,6 +8,7 @@ from pdf_reader import extract_text_from_pdf
 from ai_engine import analyze_resume, get_skill_roadmap, generate_interview_questions
 
 app = FastAPI()
+os.makedirs("uploads", exist_ok=True)
 
 import os
 
